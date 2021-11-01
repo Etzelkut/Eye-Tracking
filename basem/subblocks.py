@@ -171,3 +171,67 @@ def conv3x3(in_planes: int, out_planes: int, stride: int = 1, groups: int = 1, d
 def conv1x1(in_planes: int, out_planes: int, stride: int = 1) -> nn.Conv2d:
     """1x1 convolution"""
     return nn.Conv2d(in_planes, out_planes, kernel_size=1, stride=stride, bias=False)
+
+
+
+class GatedConvolution_alt(nn.Module):
+    def __init__(self,d_model,patch_size=3,padding=1):
+        super(GatedConvolution_alt,self).__init__()
+        self.conv = nn.Conv1d(in_channels=d_model, out_channels=2 * d_model,kernel_size=patch_size,padding=padding,bias=True)
+        init.xavier_uniform_(self.conv.weight, gain=1)
+
+    def forward(self,x):
+        convoluted = self.conv(x.transpose(1,2)).transpose(1,2)
+        out, gate = convoluted.split(int(convoluted.size(-1) / 2), -1)
+        out = out * torch.sigmoid(gate)
+        return out
+
+class GLU_alt(nn.Module):
+    def __init__(self,d_model,num_layers,patch_size=3,padding=1):#Dauphin's m_input= n_input= d_model
+        super(GLU_alt,self).__init__()
+        self.gated_convs = nn.ModuleList([GatedConvolution_alt(d_model,patch_size,padding) for _ in range(num_layers)])
+    
+    def forward(self,x):
+        for convolution in self.gated_convs:
+            x = convolution(x)
+        return x
+
+
+
+class Residual_alt(nn.Module):
+    def __init__(self):
+        super().__init__()
+        
+    
+    def forward(self,x):
+
+        return x
+
+
+class Branched_conv_2d(nn.Module):
+    def __init__(self, d_model, activation, out_d = 16,):
+        super().__init__()
+        self.convleft = nn.Conv2d(1, out_d, (1,1))
+        self.convright = nn.Conv2d(1, out_d, (3,1), padding = (1, 0))
+        self.activation = activation
+
+    def forward(self, x):
+        x = x[:, None]
+        x = self.activation(self.convleft(x)) + self.activation(self.convright(x))
+        x.squeeze_(1)
+        return x
+
+
+
+class Branched_conv_stand(nn.Module):
+    def __init__(self, d_model, activation, out_d = 256,):
+        super().__init__()
+        self.convleft = nn.Conv1d(in_channels=d_model, out_channels=out_d, kernel_size=1, bias=True)
+        self.convright = nn.Conv1d(in_channels=d_model, out_channels=out_d, kernel_size=3, padding=1, bias=True)
+        self.activation = activation
+
+    def forward(self, x):
+        x = x.transpose(1,2)
+        x = self.activation(self.convleft(x)) + self.activation(self.convright(x))
+        x = x.transpose(1,2)
+        return x

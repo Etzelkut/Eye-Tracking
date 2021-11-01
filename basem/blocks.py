@@ -1,5 +1,5 @@
 from basic_dependency import *
-from subblocks import PositionalEncoding, AxialPositionalEncoding, GLUblock, GLUblock_no_wn, conv3x3, conv1x1
+from subblocks import PositionalEncoding, AxialPositionalEncoding, GLUblock, GLUblock_no_wn, conv3x3, conv1x1, GLU_alt
 from attn import LinearAttention, MultiheadAttentionRPR, AttentionLayer, SelfAttention_local
 
 #import copy
@@ -73,6 +73,7 @@ class Attention_Block(nn.Module):
       "local_sa": SelfAttention_local(type_dict["d"], type_dict["num_heads"], 
                                 n_local_attn_heads = type_dict["n_local_attn_heads"], dropout = type_dict["dropout"],
                                 local_attn_window_size = type_dict["local_attn_window_size"]),
+      "glu_alt": GLU_alt(type_dict["d"], num_layers=type_dict["alt_num_layers"], patch_size=type_dict["alt_patch_size"], padding=type_dict["alt_padding"]),                          
     }
     self.type_module = type_dict["type_module"]
     self.block = choose_module[type_dict["type_module"]]

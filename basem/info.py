@@ -5,7 +5,7 @@ base_args = {
 
 
 example_attention_block = {
-    "type_module" : "gcn", #att, gcn, gcn_no_wn, linear, rpr, local_sa, light, dynamic
+    "type_module" : "gcn", #att, gcn, gcn_no_wn, linear, rpr, local_sa, glu_alt, light, dynamic
     "d": base_args["new_d"],
     "dropout": 0.05, # in some dropout do not exist
     "num_heads": 2, #if type_module == local_sa, then n_local_attn_heads + global = num_heads
@@ -19,6 +19,20 @@ example_attention_block = {
     "max_relative_positions_rpr": 8,
     #for dynamic and light
     #"kernel_size_dynamic": 30, 
+    #for glu alt
+    "alt_num_layers": 1,
+    "alt_patch_size": 3,
+    "alt_padding": 1,
+}
+
+
+
+example_evolved_encoder_hparams = {
+    "d": base_args["new_d"],
+    "number_of_main": 1,
+    "main_attention_block": example_attention_block,
+    
+
 }
 
 
