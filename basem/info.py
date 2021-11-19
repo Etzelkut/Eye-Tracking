@@ -26,13 +26,23 @@ example_attention_block = {
 }
 
 
+example_branch = {
+    "type_module": "1d", #2d
+    "d_model": base_args["new_d"],
+    "out_d": 256,
+}
+
 
 example_evolved_encoder_hparams = {
     "d": base_args["new_d"],
     "number_of_main": 1,
     "main_attention_block": example_attention_block,
+    "branched_conv": example_branch,
     
+    "number_of_add": 1,
+    "add_attention_block": example_attention_block,
 
+    "norm_after_block":False,
 }
 
 
@@ -48,8 +58,6 @@ example_encoder_hparams = {
     "norm_after_block":False,
     "alternative_weight_init": False,
 }
-
-
 
 
 example_emb = {

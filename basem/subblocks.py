@@ -174,6 +174,9 @@ def conv1x1(in_planes: int, out_planes: int, stride: int = 1) -> nn.Conv2d:
 
 
 
+#####################################################
+
+
 class GatedConvolution_alt(nn.Module):
     def __init__(self,d_model,patch_size=3,padding=1):
         super(GatedConvolution_alt,self).__init__()
@@ -197,16 +200,7 @@ class GLU_alt(nn.Module):
         return x
 
 
-
-class Residual_alt(nn.Module):
-    def __init__(self):
-        super().__init__()
-        
-    
-    def forward(self,x):
-
-        return x
-
+######################################################################
 
 class Branched_conv_2d(nn.Module):
     def __init__(self, d_model, activation, out_d = 16,):
@@ -214,11 +208,13 @@ class Branched_conv_2d(nn.Module):
         self.convleft = nn.Conv2d(1, out_d, (1,1))
         self.convright = nn.Conv2d(1, out_d, (3,1), padding = (1, 0))
         self.activation = activation
+        self.norm3 = nn.LayerNorm(out_d)
 
     def forward(self, x):
         x = x[:, None]
         x = self.activation(self.convleft(x)) + self.activation(self.convright(x))
         x.squeeze_(1)
+        x = self.norm3(x)
         return x
 
 
@@ -229,9 +225,47 @@ class Branched_conv_stand(nn.Module):
         self.convleft = nn.Conv1d(in_channels=d_model, out_channels=out_d, kernel_size=1, bias=True)
         self.convright = nn.Conv1d(in_channels=d_model, out_channels=out_d, kernel_size=3, padding=1, bias=True)
         self.activation = activation
+        self.norm3 = nn.LayerNorm(out_d)
 
     def forward(self, x):
         x = x.transpose(1,2)
         x = self.activation(self.convleft(x)) + self.activation(self.convright(x))
         x = x.transpose(1,2)
+        x = self.norm3(x)
         return x
+
+####################################################
+
+
+class Group_End_2d_Wrap(nn.Module):
+  def __init__(self, d_model):
+    super().__init__()
+
+    self.conv_group = nn.Conv2d(d_model, d_model, (9,1), groups = d_model, padding = (4,0))
+    self.conv_end = nn.Conv2d(d_model, 1, (1,1))
+
+  def forward(self, x):
+
+    x = x[:, None]
+    x = self.conv_group(x)
+    x = self.conv_end(x)
+    x.squeeze_(1)
+
+    return x
+
+
+class Group_End_1d_Wrap(nn.Module):
+  def __init__(self, d_model):
+    super().__init__()
+
+    self.conv_group = nn.Conv1d(d_model, d_model, 9, groups = d_model, padding = 4, bias=True)
+    self.conv_end = nn.Conv1d(d_model, 1, 1, bias=True)
+
+  def forward(self, x):
+
+    x = x.transpose(1,2)
+    x = self.conv_group(x)
+    x = self.conv_end(x)
+    x = x.transpose(1,2)
+
+    return x

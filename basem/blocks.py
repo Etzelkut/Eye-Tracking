@@ -1,6 +1,8 @@
 from basic_dependency import *
 from subblocks import PositionalEncoding, AxialPositionalEncoding, GLUblock, GLUblock_no_wn, conv3x3, conv1x1, GLU_alt
+from subblocks import Branched_conv_2d, Branched_conv_stand, Group_End_1d_Wrap, Group_End_2d_Wrap
 from attn import LinearAttention, MultiheadAttentionRPR, AttentionLayer, SelfAttention_local
+from functional import mish_f
 
 #import copy
 
@@ -125,6 +127,40 @@ class Pos_Emb(nn.Module):
     
   def forward(self, x):
     return self.pos_emb(x)
+
+
+class Group_End_Module(nn.Module):
+  def __init__(self, type_module, d_model):
+    super().__init__()
+
+    if type_module == "2d":
+      self.groupend = Group_End_2d_Wrap(d_model)
+
+    elif type_module == "1d":
+      self.groupend = Group_End_1d_Wrap(d_model)
+
+    else:
+      raise Exception("Sorry, no such method")
+
+  def forward(self, x):
+    x = self.groupend(x)
+    return x
+
+
+class Branched_Module(nn.Module):
+  def __init__(self, type_module, d_model, activation = mish_f):
+    super().__init__()
+
+    if type_module == "2d":
+      self.branches = Branched_conv_2d(d_model, activation)
+    elif type_module == "1d":
+      self.branches = Branched_conv_stand(d_model, activation)
+    else:
+      raise Exception("Sorry, no such method")
+
+  def forward(self, x):
+    x = self.branches(x)
+    return x
 
 
 
