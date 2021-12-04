@@ -95,11 +95,11 @@ class UnityEyesDataset(Dataset):
     return sample
 
 
-
 class Dataset_Unity(pl.LightningDataModule):
-    def __init__(self, hparams, *args, **kwargs):
+    def __init__(self, datahparams, *args, **kwargs):
         super().__init__()
-        self.hparams = hparams
+        
+        self.hparams = datahparams
       
     def prepare_data(self):
         print("can add download here")
