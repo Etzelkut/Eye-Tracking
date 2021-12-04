@@ -40,7 +40,7 @@ class GLUblock_wrap(nn.Module):
 class MultiheadAttentionRPR_wrap(nn.Module):
     def __init__(self, d, num_heads, max_relative_positions_rpr, dropout):
         super().__init__()    
-        self.att = nn.MultiheadAttentionRPR(d, num_heads, max_relative_positions_rpr, dropout)
+        self.att = MultiheadAttentionRPR(d, num_heads, max_relative_positions_rpr, dropout)
     
     def forward(self, x):
         x = x.transpose(0,1)#.contiguous()
