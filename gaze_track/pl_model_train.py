@@ -63,7 +63,7 @@ class Gaze_Track_pl(pl.LightningModule):
 
 
     def training_step(self, batch, batch_idx):
-        batch['img'] = self.augment(batch['img'], self.current_epoch)
+        batch['img'] = self.augment(batch['img'].float(), self.current_epoch)
         heatmaps_loss, landmarks_loss, gaze_loss = self.shared_step(batch)
         loss = (landmarks_loss + gaze_loss + heatmaps_loss * 10)
         
