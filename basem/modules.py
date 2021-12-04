@@ -105,7 +105,7 @@ class Encoder_Block(nn.Module):
     def weight_init(self):
         for p in self.parameters():
             if p.dim() > 1:
-                nn.init.xavier_uniform_(p)
+                xavier_uniform_(p)
 
     def forward(self, x):
         for layer in self.layers:
