@@ -96,37 +96,38 @@ class UnityEyesDataset(Dataset):
 
 
 class Dataset_Unity(pl.LightningDataModule):
-    def __init__(self, datahparams, *args, **kwargs):
-        super().__init__()
-        self.save_hyperparameters(datahparams)
+  def __init__(self, datahparams, *args, **kwargs):
+    super().__init__()
+    #self.save_hyperparameters(datahparams)
+    self.hparams = datahparams
       
-    def prepare_data(self):
-        print("can add download here")
+  def prepare_data(self):
+    print("can add download here")
     
-    def setup(self):
-        self.dataset_train = UnityEyesDataset(self.hparams["img_dir"], self.hparams["im_size"], transform=Preprocess(), grayscale = self.hparams["grayscale"], val = False)
-        dataset_val = UnityEyesDataset(self.hparams["img_dir"], self.hparams["im_size"], transform=Preprocess(), grayscale = self.hparams["grayscale"], val = True)
+  def setup(self):
+    self.dataset_train = UnityEyesDataset(self.hparams["img_dir"], self.hparams["im_size"], transform=Preprocess(), grayscale = self.hparams["grayscale"], val = False)
+    dataset_val = UnityEyesDataset(self.hparams["img_dir"], self.hparams["im_size"], transform=Preprocess(), grayscale = self.hparams["grayscale"], val = True)
 
-        N = len(dataset_val)
-        vn = int(N/2)
-        tn = N - vn
-        self.dataset_test, self.dataset_val = torch.utils.data.random_split(dataset_val, (tn, vn))
+    N = len(dataset_val)
+    vn = int(N/2)
+    tn = N - vn
+    self.dataset_test, self.dataset_val = torch.utils.data.random_split(dataset_val, (tn, vn))
 
 
-    def train_dataloader(self):
-      data_train = DataLoader(self.dataset_train, batch_size=self.hparams["batch_size"], num_workers=self.hparams["num_workers"], 
-                              shuffle=self.hparams["dataloader_shuffle"], 
-                              )
-      return data_train
+  def train_dataloader(self):
+    data_train = DataLoader(self.dataset_train, batch_size=self.hparams["batch_size"], num_workers=self.hparams["num_workers"], 
+                            shuffle=self.hparams["dataloader_shuffle"], 
+                            )
+    return data_train
 
-    def val_dataloader(self):
-      val = DataLoader(self.dataset_val, batch_size=self.hparams["batch_size"], num_workers=self.hparams["num_workers"], 
-                              shuffle=False, 
-                              )
-      return val
+  def val_dataloader(self):
+    val = DataLoader(self.dataset_val, batch_size=self.hparams["batch_size"], num_workers=self.hparams["num_workers"], 
+                            shuffle=False, 
+                            )
+    return val
 
-    def test_dataloader(self):
-      test = DataLoader(self.dataset_test, batch_size=self.hparams["batch_size"], num_workers=self.hparams["num_workers"], 
-                              shuffle=False, 
-                              )
-      return test
+  def test_dataloader(self):
+    test = DataLoader(self.dataset_test, batch_size=self.hparams["batch_size"], num_workers=self.hparams["num_workers"], 
+                            shuffle=False, 
+                            )
+    return test
