@@ -36,7 +36,7 @@ class Gaze_Track_pl(pl.LightningModule):
         self.gaze_loss = nn.MSELoss()
 
     def forward(self, x):
-        gaze, heatmaps, landmarks_out = self.network(x)
+        gaze, heatmaps, landmarks_out = self.network(x.float())
         return gaze, heatmaps, landmarks_out
 
 

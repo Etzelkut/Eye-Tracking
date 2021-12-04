@@ -38,12 +38,15 @@ class Modified_Encoder_Layer(nn.Module):
 
         if m_layer_hparams["norm_after_block"]:
             modules_list.append(nn.LayerNorm(m_layer_hparams["d"]))
+        
+        modules_list.append(nn.Identity())
 
         self.depth = len(modules_list)
         self.modules_list = nn.ModuleList(modules_list)
 
     def forward(self, x):
         residual = 0
+        print(self.residual_connection_steps)
         # layer traversing 
         for i in range(self.depth):
             # residual connection
