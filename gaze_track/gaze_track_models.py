@@ -38,7 +38,7 @@ class Transf_Feature_Extract(nn.Module):
         one_patch_dim = int(channels * (self.patch_size)**2)
 
         if feature_extract_hparams["resize_"]["add_resize"]:
-            rm = eature_extract_hparams["resize_"]["resize_module"]
+            rm = feature_extract_hparams["resize_"]["resize_module"]
             self.patch_embedding = Resize_Module(type_module=rm["type_module"], 
                                 size=one_patch_dim, new_size=rm["new_size"])
         else:
