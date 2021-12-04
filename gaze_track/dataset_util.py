@@ -3,9 +3,6 @@ sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
 from basem.basic_dependency import *
 
-import json
-import cv2
-
 def process_coords(coords_list, ih):
   coords = [eval(l) for l in coords_list]
   return np.array([(x, ih-y, z) for (x, y, z) in coords])

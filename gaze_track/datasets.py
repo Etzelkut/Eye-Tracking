@@ -7,6 +7,8 @@ from gaze_track.dataset_util import preprocess_unityeyes_image, get_heatmaps
 from gaze_track.augmentations import Rescale, CenterCrop, RandomCrop, transforms, Preprocess
 
 import cv2
+import json
+import torchvision.transforms.functional as TF
 
 class UnityEyesDataset(Dataset):
   def __init__(self, img_dir, output_size, transform=None, grayscale = True, val = True):
