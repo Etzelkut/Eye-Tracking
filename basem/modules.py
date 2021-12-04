@@ -46,7 +46,6 @@ class Modified_Encoder_Layer(nn.Module):
 
     def forward(self, x):
         residual = 0
-        print(self.residual_connection_steps)
         # layer traversing 
         for i in range(self.depth):
             # residual connection
@@ -54,8 +53,8 @@ class Modified_Encoder_Layer(nn.Module):
                 x = x + residual
                 residual = x
                 #test
-                print(i)
-                print(self.modules_list[i])
+                #print(i)
+                #print(self.modules_list[i])
             #
             x = self.modules_list[i](x)
 
