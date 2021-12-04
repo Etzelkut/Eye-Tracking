@@ -1,7 +1,7 @@
-from basic_dependency import *
-from subblocks import Swish, Mish
-from functional import swish_f, mish_f, clones
-from blocks import Attention_Block, PositionwiseFeedForward, PositionwiseFeedForward_conv, Conv2Block, Branched_Module, Group_End_Module
+from basem.basic_dependency import *
+from basem.subblocks import Swish, Mish
+from basem.functional import swish_f, mish_f, clones
+from basem.blocks import Attention_Block, PositionwiseFeedForward, PositionwiseFeedForward_conv, Conv2Block, Branched_Module, Group_End_Module
 #from blocks import Resize_Module, Pos_Emb
 
 

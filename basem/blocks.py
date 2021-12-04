@@ -1,11 +1,10 @@
-from basic_dependency import *
-from subblocks import PositionalEncoding, AxialPositionalEncoding, GLUblock, GLUblock_no_wn, conv3x3, conv1x1, GLU_alt
-from subblocks import Branched_conv_2d, Branched_conv_stand, Group_End_1d_Wrap, Group_End_2d_Wrap
-from attn import LinearAttention, MultiheadAttentionRPR, AttentionLayer, SelfAttention_local
-from functional import mish_f
+from basem.basic_dependency import *
+from basem.subblocks import PositionalEncoding, AxialPositionalEncoding, GLUblock, GLUblock_no_wn, conv3x3, conv1x1, GLU_alt
+from basem.subblocks import Branched_conv_2d, Branched_conv_stand, Group_End_1d_Wrap, Group_End_2d_Wrap
+from basem.attn import LinearAttention, MultiheadAttentionRPR, AttentionLayer, SelfAttention_local
+from basem.functional import mish_f
 
 #import copy
-
 
 class MultiheadAttention_wrap(nn.Module):
     def __init__(self, d, num_heads, dropout):

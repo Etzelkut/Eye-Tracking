@@ -1,4 +1,4 @@
-from basic_dependency import *
+from basem.basic_dependency import *
 
 def swish_f(x):
     return x * torch.sigmoid(x)

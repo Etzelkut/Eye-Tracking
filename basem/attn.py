@@ -1,4 +1,4 @@
-from basic_dependency import *
+from basem.basic_dependency import *
 from functools import partial
 from local_attention import LocalAttention
 from functional import generate_relative_positions_matrix, default, split_at_index

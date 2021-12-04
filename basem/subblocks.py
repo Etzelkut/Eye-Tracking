@@ -1,4 +1,4 @@
-from basic_dependency import *
+from basem.basic_dependency import *
 from axial_positional_embedding import AxialPositionalEmbedding
 #from fairseq.modules import LightweightConv, DynamicConv
 
