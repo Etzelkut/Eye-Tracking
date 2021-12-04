@@ -10,37 +10,53 @@ class Modified_Encoder_Layer(nn.Module):
     def __init__(self, m_layer_hparams):
         super().__init__()
         modules_list = []
-        residual_connection_steps = []
+        self.residual_connection_steps = []
+
+        self.residual_connection_steps.append(len(modules_list))
 
         modules_list.append(nn.LayerNorm(m_layer_hparams["d"]))
         
         for i in range(m_layer_hparams["number_of_main"]):
             modules_list.append(Attention_Block(m_layer_hparams["main_attention_block"]))
+        
+        self.residual_connection_steps.append(len(modules_list))
 
         modules_list.append(nn.LayerNorm(m_layer_hparams["d"]))
 
         modules_list.append(Branched_Module(m_layer_hparams["branched_conv"]["type_module"], m_layer_hparams["branched_conv"]["d_model"]))
         modules_list.append(Group_End_Module(m_layer_hparams["branched_conv"]["type_module"], m_layer_hparams["branched_conv"]["d_model"]))
+        
+        self.residual_connection_steps.append(len(modules_list))
 
         modules_list.append(nn.LayerNorm(m_layer_hparams["d"]))
         
         for i in range(m_layer_hparams["number_of_add"]):
             modules_list.append(Attention_Block(m_layer_hparams["add_attention_block"]))
+        
+        if m_layer_hparams["number_of_add"] != 0:
+            self.residual_connection_steps.append(len(modules_list))
 
         if m_layer_hparams["norm_after_block"]:
             modules_list.append(nn.LayerNorm(m_layer_hparams["d"]))
 
+        self.depth = len(modules_list)
         self.modules_list = nn.ModuleList(modules_list)
 
     def forward(self, x):
-        return x
-        
-    def forward(self, inputs):
+        residual = 0
+        # layer traversing 
         for i in range(self.depth):
-            inputs = self.linear[i](inputs)
+            # residual connection
+            if i in self.residual_connection_steps:
+                x = x + residual
+                residual = x
+                #test
+                print(i)
+                print(self.modules_list[i])
+            #
+            x = self.modules_list[i](x)
 
-        return inputs
-
+        return x
 
 
 def activation_choose(types):
@@ -101,12 +117,12 @@ class Encoder_Block(nn.Module):
 class HeatMapExctract(nn.Module):
   def __init__(self, in_channels):
     super(HeatMapExctract, self).__init__()
-    self.block1 = Conv2Block(in_channels, 6)
-    self.block2 = Conv2Block(6, 12)
-    self.block3 = Conv2Block(12, 24)
-    self.block4 = Conv2Block(24, 34)
+    self.block1 = Conv2Block(in_channels, 3)
+    self.block2 = Conv2Block(3, 6)
+    self.block3 = Conv2Block(6, 12)
+    self.block4 = Conv2Block(12, 17)
 
-    self.downsample = nn.AvgPool2d(2, 2)
+    #self.downsample = nn.AvgPool2d(2, 2)
 
   def forward(self, x):
       x = self.block1(x)
@@ -114,6 +130,6 @@ class HeatMapExctract(nn.Module):
       x = self.block3(x)
       x = self.block4(x)
 
-      x = self.downsample(x)
+      #x = self.downsample(x)
 
       return x

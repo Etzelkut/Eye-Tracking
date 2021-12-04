@@ -1,6 +1,6 @@
 base_args = {
-    "d": 40,
-    "new_d": 128,
+    "d": 0,
+    "new_d": 256,
 }
 
 
@@ -57,24 +57,4 @@ example_encoder_hparams = {
     "layers_number":2,
     "norm_after_block":False,
     "alternative_weight_init": False,
-}
-
-
-example_emb = {
-    "add_emb": True, 
-    "emb_module": {
-        "type_module": "axial",
-        "d": base_args["new_d"], # dimensions
-        "dropout": 0.1,
-    }
-}
-
-
-example_resize = {
-    "add_resize": True, 
-    "resize_module": {
-        "type_module": "1dconv",
-        "size": base_args["d"], # dimensions
-        "new_size": base_args["new_d"],
-    },
 }
