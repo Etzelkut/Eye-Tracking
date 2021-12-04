@@ -6,6 +6,7 @@ from basem.basic_dependency import *
 from gaze_track.dataset_util import preprocess_unityeyes_image, get_heatmaps
 from gaze_track.augmentations import Rescale, CenterCrop, RandomCrop, transforms, Preprocess
 
+import cv2
 
 class UnityEyesDataset(Dataset):
   def __init__(self, img_dir, output_size, transform=None, grayscale = True, val = True):
