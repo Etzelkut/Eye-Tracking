@@ -92,7 +92,7 @@ class Gaze_Predictor(nn.Module):
         super().__init__()
         self.params = params
 
-        if self.params["grayscale"]:
+        if self.params["feature_extractor_hparams"]["grayscale"]:
             self.channels = 1
         else:
             self.channels = 3

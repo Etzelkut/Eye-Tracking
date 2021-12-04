@@ -5,8 +5,6 @@ from basem.basic_dependency import *
 
 import json
 import cv2
-import glob
-
 
 def process_coords(coords_list, ih):
   coords = [eval(l) for l in coords_list]
