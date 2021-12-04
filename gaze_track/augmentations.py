@@ -124,7 +124,7 @@ class DataAugmentationImage(nn.Module):
         x = self.sharpblur(x)
         p = random.random()
         if p < 0.5:
-          x = x + torch.randn(x.size()) * self.std + self.mean
+          x = x + torch.randn(x.size(), dtype = x.type(), device = x.get_device()) * self.std + self.mean
       
       x = self.normalize(x)
       return x
