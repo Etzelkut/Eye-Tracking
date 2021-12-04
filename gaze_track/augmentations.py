@@ -109,7 +109,7 @@ class DataAugmentationImage(nn.Module):
       self.sharp = transforms.RandomAdjustSharpness(sharpness_factor=2, p=0.25)
       self.sharpblur = transforms.RandomAdjustSharpness(sharpness_factor=0, p=0.1)
       
-      self.std = 1.
+      self.std = 1.0
       self.mean = 0
 
       self.normalize = transforms.Normalize([0.5], [0.5])
@@ -124,7 +124,7 @@ class DataAugmentationImage(nn.Module):
         x = self.sharpblur(x)
         p = random.random()
         if p < 0.5:
-          x = x + torch.randn(x.size(), dtype = x.type(), device = x.get_device()) * self.std + self.mean
+          x = x + torch.randn(x.size(), device = x.get_device(), dtype=x.dtype) * self.std + self.mean
       
       x = self.normalize(x)
       return x
