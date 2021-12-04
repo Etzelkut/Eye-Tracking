@@ -47,7 +47,7 @@ class Transf_Feature_Extract(nn.Module):
 
         self.dropout = nn.Dropout(feature_extract_hparams["dropout"])
 
-        self.number_of_learn_params = model_dict["number_of_learn_params"]
+        self.number_of_learn_params = feature_extract_hparams["number_of_learn_params"]
         self.zero_class_token = nn.Parameter(torch.randn(1, self.number_of_learn_params, feature_extract_hparams["d_model_emb"]))
 
         if feature_extract_hparams["pos_emb"]["add_emb"]:
