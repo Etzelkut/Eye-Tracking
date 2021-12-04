@@ -19,7 +19,7 @@ class HeatmapLoss(torch.nn.Module):
         return loss
 
 
-class Re_pl(pl.LightningModule):
+class Gaze_Track_pl(pl.LightningModule):
     def __init__(self, hparams, *args, **kwargs): #*args, **kwargs hparams, steps_per_epoch
         super().__init__()
         self.save_hyperparameters(hparams)
