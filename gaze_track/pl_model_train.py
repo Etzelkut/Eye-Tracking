@@ -65,7 +65,7 @@ class Gaze_Track_pl(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         batch['img'] = self.augment(batch['img'].float(), self.current_epoch)
         heatmaps_loss, landmarks_loss, gaze_loss = self.shared_step(batch)
-        loss = (landmarks_loss + gaze_loss + heatmaps_loss * 10)
+        loss = (landmarks_loss + gaze_loss + heatmaps_loss) #* 10)
         
         self.log('train_loss_heatmap', heatmaps_loss, on_step=False, on_epoch=True, logger=True)
         self.log('train_loss_landmarks', landmarks_loss, on_step=False, on_epoch=True, logger=True)
@@ -78,7 +78,7 @@ class Gaze_Track_pl(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         heatmaps_loss, landmarks_loss, gaze_loss = self.shared_step(batch)
-        loss = (landmarks_loss + gaze_loss + heatmaps_loss * 10)
+        loss = (landmarks_loss + gaze_loss + heatmaps_loss) #* 10)
         
         self.log('vall_loss_heatmap', heatmaps_loss, on_step=False, on_epoch=True, logger=True)
         self.log('val_loss_landmarks', landmarks_loss, on_step=False, on_epoch=True, logger=True)
@@ -91,7 +91,7 @@ class Gaze_Track_pl(pl.LightningModule):
 
     def test_step(self, batch, batch_idx):
         heatmaps_loss, landmarks_loss, gaze_loss = self.shared_step(batch)
-        loss = (landmarks_loss + gaze_loss + heatmaps_loss * 10)
+        loss = (landmarks_loss + gaze_loss + heatmaps_loss) #* 10)
         
         self.log('test_loss_heatmap', heatmaps_loss, on_step=False, on_epoch=True, logger=True)
         self.log('test_loss_landmarks', landmarks_loss, on_step=False, on_epoch=True, logger=True)
