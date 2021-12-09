@@ -44,7 +44,7 @@ class Gaze_Track_pl(pl.LightningModule):
 
         heatmap_loss = self.heatmapLoss(combined_hm_preds, heatmaps)
         landmarks_loss = self.landmarks_loss(landmarks_pred, landmarks)
-        gaze_loss = self.gaze_loss(gaze_pred, gaze) * 10
+        gaze_loss = self.gaze_loss(gaze_pred, gaze) * 100
 
         return torch.sum(heatmap_loss), landmarks_loss, gaze_loss
 
