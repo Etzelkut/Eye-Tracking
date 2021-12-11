@@ -40,12 +40,14 @@ class UnityEyesDataset(Dataset):
       self.json_paths = np.array(self.json_paths)[mask_val_test]
       self.resize = Rescale()
       self.crop = CenterCrop(output_size)
+      print("val")
       self.norm = transforms.Normalize([0.5], [0.5])
     else:
       self.img_paths = np.array(self.img_paths)[idxs_train]
       self.json_paths = np.array(self.json_paths)[idxs_train]
       self.resize = Rescale()
       self.crop = RandomCrop(output_size)
+      print("train")
 
   
   def __len__(self):
