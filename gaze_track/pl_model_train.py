@@ -11,7 +11,7 @@ from ranger_adabelief import RangerAdaBelief
 
 class HeatmapLoss(torch.nn.Module):
     def __init__(self):
-        super(HeatmapLoss, self).__init__()
+        super().__init__()
 
     def forward(self, pred, gt):
         loss = ((pred - gt)**2)
@@ -40,9 +40,9 @@ class Gaze_Track_pl(pl.LightningModule):
         return gaze, heatmaps, landmarks_out
 
 
-    def loss_calc(self, combined_hm_preds, heatmaps, landmarks_pred, landmarks, gaze_pred, gaze):
+    def loss_calc(self, heatmaps_pred, heatmaps, landmarks_pred, landmarks, gaze_pred, gaze):
 
-        heatmap_loss = self.heatmapLoss(combined_hm_preds, heatmaps)
+        heatmap_loss = self.heatmapLoss(heatmaps_pred, heatmaps)
         landmarks_loss = self.landmarks_loss(landmarks_pred, landmarks)
         gaze_loss = self.gaze_loss(gaze_pred, gaze) * 100
 
@@ -54,10 +54,10 @@ class Gaze_Track_pl(pl.LightningModule):
         heatmaps = batch['heatmaps'].float()
         landmarks = batch['landmarks'].float()
         gaze = batch['gaze'].float()
-        gaze_pred, heatmaps_pred, landmarks_out = self(imgs)
+        gaze_pred, heatmaps_pred, landmarks_pred = self(imgs)
 
         heatmaps_loss, landmarks_loss, gaze_loss = self.loss_calc(
-                    heatmaps_pred, heatmaps, landmarks_out, landmarks, gaze_pred, gaze,
+                    heatmaps_pred, heatmaps, landmarks_pred, landmarks, gaze_pred, gaze,
                     )
         return heatmaps_loss, landmarks_loss, gaze_loss
 
