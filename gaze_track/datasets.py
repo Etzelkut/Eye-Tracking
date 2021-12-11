@@ -103,7 +103,7 @@ class UnityEyesDataset(Dataset):
       x2 = random.randint(int(x2/2), x1)
       y2 = int(x2/x1 * y1)
       random_size = (x2, y2)
-
+      print("random size: ", random_size)
       eye_sample = self.resize(eye_sample, random_size)
 
       x, y = self.output_size

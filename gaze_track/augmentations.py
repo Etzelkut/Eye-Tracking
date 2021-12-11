@@ -98,7 +98,7 @@ class Preprocess(nn.Module):
         print("preproccess")
         print(torch.max(x_out))
         print(torch.min(x_out))
-        return x_out.float() / 255.0
+        return x_out.float()
 
 
 class DataAugmentationImage(nn.Module):
@@ -112,7 +112,7 @@ class DataAugmentationImage(nn.Module):
       self.sharp = transforms.RandomAdjustSharpness(sharpness_factor=2, p=0.25)
       self.sharpblur = transforms.RandomAdjustSharpness(sharpness_factor=0, p=0.1)
       
-      self.std = 1.0
+      self.std = 0.01
       self.mean = 0
 
       self.normalize = transforms.Normalize([0.5], [0.5])
