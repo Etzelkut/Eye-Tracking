@@ -55,19 +55,37 @@ class UnityEyesDataset(Dataset):
 
   def __getitem__(self, idx):
     full_img = cv2.imread(self.img_paths[idx])
-
+    print("im read")
+    print(np.min(full_img))
+    print(np.max(full_img))
+    
     with open(self.json_paths[idx]) as f:
         json_data = json.load(f)
 
     sample = {}
     
     eye_sample = preprocess_unityeyes_image(full_img, json_data)
+
+    print("im preprocess_unityeyes_image")
+    print(np.min(eye_sample['img']))
+    print(np.max(eye_sample['img']))
+
+
     if self.transform:
       eye_sample['img'] = self.transform(eye_sample['img'])
+
+      print("after preproccess")
+      print(torch.max(eye_sample['img']))
+      print(torch.min(eye_sample['img']))
+
     if self.grayscale:
       eye_sample['img'] = TF.rgb_to_grayscale(eye_sample['img'])
+      print("after grayacale")
+      print(torch.max(eye_sample['img']))
+      print(torch.min(eye_sample['img']))
     
     if self.val:
+      print("val")
       x, y = self.output_size
       x = int((256/224) * x)
       y = int((256/224) * y)
@@ -79,6 +97,7 @@ class UnityEyesDataset(Dataset):
       eye_sample['img'] = self.norm(eye_sample['img'])
     
     else:
+      print("train")
       x1, y1 = eye_sample['img'].shape[-2:]
       x2, y2 = self.output_size
       x2 = random.randint(int(x2/2), x1)

@@ -95,6 +95,9 @@ class Preprocess(nn.Module):
     @torch.no_grad()  # disable gradients for effiency
     def forward(self, x):
         x_out = TF.to_tensor(x) # CxHxW
+        print("preproccess")
+        print(torch.max(x_out))
+        print(torch.min(x_out))
         return x_out.float() / 255.0
 
 
@@ -118,13 +121,21 @@ class DataAugmentationImage(nn.Module):
     def forward(self, x, epoch):
       p = random.random()
       if p < (epoch/self.max_epochs):
+        print("random aug")
         x = self.jitter(x)
         x = self.blur(x)
         x = self.sharp(x)
         x = self.sharpblur(x)
+        print(torch.max(x))
+        print(torch.min(x))
+
         p = random.random()
         if p < 0.5:
           x = x + torch.randn(x.size(), device = x.get_device(), dtype=x.dtype) * self.std + self.mean
-      
+          print("random noise")
+          print(torch.max(x))
+          print(torch.min(x))
+
+      print("norm")
       x = self.normalize(x)
       return x
