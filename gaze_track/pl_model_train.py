@@ -31,7 +31,7 @@ class Gaze_Track_pl(pl.LightningModule):
         self.learning_params = self.hparams["training"]
         self.augment = DataAugmentationImage(max_epochs = self.hparams["training"]["epochs"])
 
-        self.heatmapLoss = HeatmapLoss()
+        #self.heatmapLoss = HeatmapLoss()
         self.landmarks_loss = nn.MSELoss()
         self.gaze_loss = nn.MSELoss()
 
@@ -42,11 +42,12 @@ class Gaze_Track_pl(pl.LightningModule):
 
     def loss_calc(self, heatmaps_pred, heatmaps, landmarks_pred, landmarks, gaze_pred, gaze):
 
-        heatmap_loss = self.heatmapLoss(heatmaps_pred, heatmaps)
+        #heatmap_loss = self.heatmapLoss(heatmaps_pred, heatmaps)
         landmarks_loss = self.landmarks_loss(landmarks_pred, landmarks)
         gaze_loss = self.gaze_loss(gaze_pred, gaze) * 100
 
-        return torch.sum(heatmap_loss), landmarks_loss, gaze_loss
+        #return torch.sum(heatmap_loss), landmarks_loss, gaze_loss
+        return 0, landmarks_loss, gaze_loss
 
 
     def shared_step(self, batch):
@@ -65,9 +66,9 @@ class Gaze_Track_pl(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         batch['img'] = self.augment(batch['img'].float(), self.current_epoch)
         heatmaps_loss, landmarks_loss, gaze_loss = self.shared_step(batch)
-        loss = (landmarks_loss + gaze_loss + heatmaps_loss) #* 10)
+        loss = (landmarks_loss + gaze_loss) #+ heatmaps_loss) #* 10)
         
-        self.log('train_loss_heatmap', heatmaps_loss, on_step=False, on_epoch=True, logger=True)
+        #self.log('train_loss_heatmap', heatmaps_loss, on_step=False, on_epoch=True, logger=True)
         self.log('train_loss_landmarks', landmarks_loss, on_step=False, on_epoch=True, logger=True)
         self.log('train_loss_gaze', gaze_loss, on_step=False, on_epoch=True, logger=True)
         
@@ -80,7 +81,7 @@ class Gaze_Track_pl(pl.LightningModule):
         heatmaps_loss, landmarks_loss, gaze_loss = self.shared_step(batch)
         loss = (landmarks_loss + gaze_loss + heatmaps_loss) #* 10)
         
-        self.log('vall_loss_heatmap', heatmaps_loss, on_step=False, on_epoch=True, logger=True)
+        #self.log('vall_loss_heatmap', heatmaps_loss, on_step=False, on_epoch=True, logger=True)
         self.log('val_loss_landmarks', landmarks_loss, on_step=False, on_epoch=True, logger=True)
         self.log('val_loss_gaze', gaze_loss, on_step=False, on_epoch=True, logger=True)
         
@@ -93,7 +94,7 @@ class Gaze_Track_pl(pl.LightningModule):
         heatmaps_loss, landmarks_loss, gaze_loss = self.shared_step(batch)
         loss = (landmarks_loss + gaze_loss + heatmaps_loss) #* 10)
         
-        self.log('test_loss_heatmap', heatmaps_loss, on_step=False, on_epoch=True, logger=True)
+        #self.log('test_loss_heatmap', heatmaps_loss, on_step=False, on_epoch=True, logger=True)
         self.log('test_loss_landmarks', landmarks_loss, on_step=False, on_epoch=True, logger=True)
         self.log('test_loss_gaze', gaze_loss, on_step=False, on_epoch=True, logger=True)
         

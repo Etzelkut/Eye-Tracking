@@ -4,12 +4,65 @@ from os import sys, path
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
 from basem.basic_dependency import *
-from basem.blocks import Resize_Module, Pos_Emb
+from basem.blocks import Resize_Module, Pos_Emb, PositionwiseFeedForward
 from basem.modules import Mish, Modified_Encoder_Layer, Encoder_Block, HeatMapExctract
+from basem.functional import mish_f
 
 from einops import rearrange
 
 from gaze_track.utils import softargmax2d
+
+
+# https://gist.github.com/mkocabas/4f56932afd21ce75e6b2e7d0c70488b8
+class SpatialSoftmax(torch.nn.Module):
+	def __init__(self, height, width, channel, temperature=None, data_format='NCHW', unnorm=False):
+		super(SpatialSoftmax, self).__init__()
+		self.data_format = data_format
+		self.height = height
+		self.width = width
+		self.channel = channel
+		self.unnorm = unnorm
+
+		if temperature:
+			self.temperature = Parameter(torch.ones(1) * temperature)
+		else:
+			self.temperature = 1.
+
+		pos_x, pos_y = np.meshgrid(
+			np.linspace(-1., 1., self.width),
+			np.linspace(-1., 1., self.height)
+		)
+		pos_x = torch.from_numpy(pos_x.reshape(self.height * self.width)).float()
+		pos_y = torch.from_numpy(pos_y.reshape(self.height * self.width)).float()
+		self.register_buffer('pos_x', pos_x)
+		self.register_buffer('pos_y', pos_y)
+
+	def forward(self, feature):
+		# Output:
+		#   (N, C*2) x_0 y_0 ...
+		if self.data_format == 'NHWC':
+			feature = feature.transpose(1, 3).tranpose(2, 3).view(-1, self.height * self.width)
+		else:
+			feature = feature.view(-1, self.height * self.width)
+
+		softmax_attention = F.softmax(feature / self.temperature, dim=-1)
+		expected_x = torch.sum(self.pos_x * softmax_attention, dim=1, keepdim=True)
+		expected_y = torch.sum(self.pos_y * softmax_attention, dim=1, keepdim=True)
+
+		if self.unnorm:
+			w = float(self.width) - 1
+			h = float(self.height) - 1
+			expected_x = (expected_x * w + w) / 2.
+			expected_y = (expected_y * h + h) / 2.
+
+		expected_xy = torch.cat([expected_x, expected_y], 1)
+		feature_keypoints = expected_xy.view(-1, self.channel, 2)
+
+		return feature_keypoints
+
+#
+
+
 
 class ViT_pos_emb(nn.Module):
     
@@ -37,10 +90,13 @@ class Transf_Feature_Extract(nn.Module):
         
         one_patch_dim = int(channels * (self.patch_size)**2)
 
+        new_size = one_patch_dim
+
         if feature_extract_hparams["resize_"]["add_resize"]:
             rm = feature_extract_hparams["resize_"]["resize_module"]
             self.patch_embedding = Resize_Module(type_module=rm["type_module"], 
                                 size=one_patch_dim, new_size=rm["new_size"])
+            new_size = rm["new_size"]
         else:
             print("no resize")
             self.patch_embedding = nn.Identity()
@@ -63,6 +119,17 @@ class Transf_Feature_Extract(nn.Module):
             self.encoder = Encoder_Block(feature_extract_hparams["encoder_params"])
 
         self.feature_extcractor = nn.Identity()
+        self.image_extcractor = nn.Identity()
+        
+        if new_size == one_patch_dim:
+            land_train = PositionwiseFeedForward(new_size, d_hid=1, activation=mish_f, glu=True)
+        else:
+            land_train = nn.Sequential(PositionwiseFeedForward(new_size, d_hid=1, activation=mish_f, glu=True),
+                                        Resize_Module(type_module="fc", size=new_size, new_size=one_patch_dim)
+                                        )
+
+        self.add_train_land = land_train if feature_extract_hparams["add_additional_train_landmarks"] else nn.Identity()
+
 
     def forward(self, x):
         # 1 1 (96) (160) - >  1 (60: 6 * 10) (256: 16 * 16)
@@ -79,9 +146,13 @@ class Transf_Feature_Extract(nn.Module):
         x = self.encoder(x)
 
         feature_vector = self.feature_extcractor(x[:, 0:self.number_of_learn_params])
+        
+        x = self.image_extcractor(x[:, self.number_of_learn_params:])
+
+        x = self.add_train_land(x)
 
         # c = self.channels, p = self.patch_size, h = self.im_size_h, w = self.im_size
-        x = rearrange(x[:, self.number_of_learn_params:], 'b (h w) (p pd c) -> b c (h p) (w pd)', h = int(self.im_size[0]/self.patch_size),  p = self.patch_size, pd = self.patch_size, )   
+        x = rearrange(x, 'b (h w) (p pd c) -> b c (h p) (w pd)', h = int(self.im_size[0]/self.patch_size),  p = self.patch_size, pd = self.patch_size, )   
 
         return x, feature_vector
 
@@ -110,12 +181,16 @@ class Gaze_Predictor(nn.Module):
 
         self.heatmap_ex = HeatMapExctract(self.channels)
 
+        h, w = params["feature_extractor_hparams"]["im_size"]
+        c = 17
+        self.landmarks_extract = SpatialSoftmax(h, w, c, temperature=1., unnorm=True)
+
     def forward(self, x):
         x, feature_vector = self.feature_extcractor(x)
         feature_vector = torch.flatten(feature_vector, start_dim=1)
 
         gaze = self.gaze_mlp(feature_vector)
         heatmaps = self.heatmap_ex(x)
-        landmarks_out = softargmax2d(heatmaps)
+        landmarks_out = self.landmarks_extract(heatmaps) #softargmax2d
 
         return gaze, heatmaps, landmarks_out
