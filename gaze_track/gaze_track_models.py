@@ -122,9 +122,9 @@ class Transf_Feature_Extract(nn.Module):
         self.image_extcractor = nn.Identity()
         
         if new_size == one_patch_dim:
-            land_train = PositionwiseFeedForward(new_size, d_hid=1, activation=mish_f, glu=True)
+            land_train = PositionwiseFeedForward(new_size, d_hid=new_size, activation=mish_f, glu=True)
         else:
-            land_train = nn.Sequential(PositionwiseFeedForward(new_size, d_hid=1, activation=mish_f, glu=True),
+            land_train = nn.Sequential(PositionwiseFeedForward(new_size, d_hid=new_size, activation=mish_f, glu=True),
                                         Resize_Module(type_module="fc", size=new_size, new_size=one_patch_dim)
                                         )
 

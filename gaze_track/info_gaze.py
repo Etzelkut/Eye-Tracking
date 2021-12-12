@@ -53,6 +53,7 @@ example_feature_extract_hparams = {
     "number_of_learn_params": 1,
     "encoder_type": "evolved", # transformer
     "encoder_params": example_evolved_encoder_hparams,
+    "add_additional_train_landmarks": True,
 }
 
 train_hparams_example = {
