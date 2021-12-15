@@ -139,6 +139,7 @@ class Dataset_Unity_pl(pl.LightningDataModule):
     
     if "halfing" not in self.hparams:
       halfing = False
+      print("no halfing")
     else:
       halfing = self.hparams["halfing"]
       print("halfing is ", self.hparams["halfing"])
