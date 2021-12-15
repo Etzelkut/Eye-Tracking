@@ -121,14 +121,18 @@ class Transf_Feature_Extract(nn.Module):
         self.feature_extcractor = nn.Identity()
         self.image_extcractor = nn.Identity()
         
-        if new_size == one_patch_dim:
-            land_train = PositionwiseFeedForward(new_size, d_hid=new_size, activation=mish_f, glu=True)
-        else:
-            land_train = nn.Sequential(PositionwiseFeedForward(new_size, d_hid=new_size, activation=mish_f, glu=True),
-                                        Resize_Module(type_module="fc", size=new_size, new_size=one_patch_dim)
-                                        )
 
-        self.add_train_land = land_train if feature_extract_hparams["add_additional_train_landmarks"] else nn.Identity()
+        self.add_train_land = nn.Identity()
+        
+        if feature_extract_hparams["add_additional_train_landmarks"]:
+            if new_size == one_patch_dim:
+                self.add_train_land = PositionwiseFeedForward(new_size, d_hid=new_size, activation=mish_f, glu=True)
+            else:
+                self.add_train_land = nn.Sequential(PositionwiseFeedForward(new_size, d_hid=new_size, activation=mish_f, glu=True),
+                                            Resize_Module(type_module="fc", size=new_size, new_size=one_patch_dim)
+                                            )
+        elif new_size != one_patch_dim:
+            self.add_train_land = Resize_Module(type_module="fc", size=new_size, new_size=one_patch_dim)
 
 
     def forward(self, x):
@@ -179,9 +183,18 @@ class Gaze_Predictor(nn.Module):
                                        nn.Linear(d_model_emb, self.params["gaze_size"]),
                                       )
 
-        self.heatmap_ex = HeatMapExctract(self.channels)
 
         h, w = params["feature_extractor_hparams"]["im_size"]
+
+        if "halfing" in params["feature_extractor_hparams"]:
+            print("hafing is: ", params["feature_extractor_hparams"]["halfing"])
+            if params["feature_extractor_hparams"]["halfing"]:
+                h, w = int(h * 0.5), int(w * 0.5)
+                
+            self.heatmap_ex = HeatMapExctract(self.channels, params["feature_extractor_hparams"]["halfing"])
+        else:
+            self.heatmap_ex = HeatMapExctract(self.channels)
+        
         c = 17
         self.landmarks_extract = SpatialSoftmax(h, w, c, temperature=1., unnorm=True)
 

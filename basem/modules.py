@@ -117,21 +117,23 @@ class Encoder_Block(nn.Module):
 
 
 class HeatMapExctract(nn.Module):
-  def __init__(self, in_channels):
+  def __init__(self, in_channels, halfing = False):
     super(HeatMapExctract, self).__init__()
-    self.block1 = Conv2Block(in_channels, 3)
-    self.block2 = Conv2Block(3, 6)
-    self.block3 = Conv2Block(6, 12)
-    self.block4 = Conv2Block(12, 17)
+
+    blocks = [
+            Conv2Block(in_channels, 3),
+            Conv2Block(3, 6),
+            Conv2Block(6, 12),
+            Conv2Block(12, 17),]
+
+    if halfing:
+        print("adding halfing")
+        blocks.insert(0, nn.AvgPool2d(2, 2))
+
+    self.blocks = nn.Sequential(*blocks)
 
     #self.downsample = nn.AvgPool2d(2, 2)
 
   def forward(self, x):
-      x = self.block1(x)
-      x = self.block2(x)
-      x = self.block3(x)
-      x = self.block4(x)
-
-      #x = self.downsample(x)
-
+      x = self.blocks(x)
       return x

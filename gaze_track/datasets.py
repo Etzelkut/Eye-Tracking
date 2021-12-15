@@ -11,7 +11,7 @@ import json
 import torchvision.transforms.functional as TF
 
 class UnityEyesDataset(Dataset):
-  def __init__(self, img_dir, output_size, transform=None, grayscale = True, val = True):
+  def __init__(self, img_dir, output_size, transform=None, grayscale = True, val = True, halfing = False):
     self.transform = transform
     if img_dir is None:
         img_dir = './gazeset/imgs'
@@ -26,7 +26,7 @@ class UnityEyesDataset(Dataset):
     self.grayscale = grayscale
     self.output_size = output_size
     self.val = val
-
+    self.halfing = halfing
     #idxs_aranged = np.arange(len(self.img_paths))
     np.random.seed(42)
 
@@ -114,7 +114,13 @@ class UnityEyesDataset(Dataset):
 
       eye_sample = self.crop(eye_sample)
 
-    heatmaps = get_heatmaps(eye_sample['img'].shape[-1],  eye_sample['img'].shape[-2], eye_sample['landmarks'])
+    halfed = 1
+    if self.halfing:
+      eye_sample['landmarks'] = eye_sample['landmarks'] * np.array([0.5, 0.5])
+      eye_sample['landmarks'] = eye_sample['landmarks'].astype(np.float32)
+      halfed = 0.5
+
+    heatmaps = get_heatmaps(int(eye_sample['img'].shape[-1] * halfed),  int(eye_sample['img'].shape[-2] * halfed), eye_sample['landmarks'])
     eye_sample["heatmaps"] = heatmaps
     sample.update(eye_sample)
     return sample
@@ -130,8 +136,17 @@ class Dataset_Unity_pl(pl.LightningDataModule):
     print("can add download here")
     
   def setup(self):
-    self.dataset_train = UnityEyesDataset(self.hparams["img_dir"], self.hparams["im_size"], transform=Preprocess(), grayscale = self.hparams["grayscale"], val = False)
-    dataset_val = UnityEyesDataset(self.hparams["img_dir"], self.hparams["im_size"], transform=Preprocess(), grayscale = self.hparams["grayscale"], val = True)
+    
+    if "halfing" not in self.hparams:
+      halfing = False
+    else:
+      halfing = self.hparams["halfing"]
+      print("halfing is ", self.hparams["halfing"])
+
+    self.dataset_train = UnityEyesDataset(self.hparams["img_dir"], self.hparams["im_size"], transform=Preprocess(), 
+                                          grayscale = self.hparams["grayscale"], val = False, halfing=halfing)
+    dataset_val = UnityEyesDataset(self.hparams["img_dir"], self.hparams["im_size"], transform=Preprocess(), 
+                                    grayscale = self.hparams["grayscale"], val = True, halfing=halfing)
 
     N = len(dataset_val)
     vn = int(N/2)

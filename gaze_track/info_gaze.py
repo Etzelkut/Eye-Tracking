@@ -10,6 +10,7 @@ base_args = {
     "patch_size": 16,
     "grayscale": True,
     "max_epochs": 100, 
+    "halfing": False,
 }
 
 example_emb = {
@@ -39,6 +40,8 @@ dataset_hparams = {
     "batch_size": 32,
     "num_workers":2,
     "dataloader_shuffle": True,
+
+    "halfing": base_args["halfing"],
 }
 
 
@@ -54,6 +57,8 @@ example_feature_extract_hparams = {
     "encoder_type": "evolved", # transformer
     "encoder_params": example_evolved_encoder_hparams,
     "add_additional_train_landmarks": True,
+
+    "halfing": base_args["halfing"],
 }
 
 train_hparams_example = {
