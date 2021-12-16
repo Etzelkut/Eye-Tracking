@@ -59,6 +59,7 @@ example_feature_extract_hparams = {
     "add_additional_train_landmarks": True,
 
     "halfing": base_args["halfing"],
+    "add_pool_end": False,
 }
 
 train_hparams_example = {

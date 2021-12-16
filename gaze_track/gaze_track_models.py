@@ -186,12 +186,18 @@ class Gaze_Predictor(nn.Module):
 
         h, w = params["feature_extractor_hparams"]["im_size"]
 
+
         if "halfing" in params["feature_extractor_hparams"]:
             print("hafing is: ", params["feature_extractor_hparams"]["halfing"])
+            add_pool_end = False
             if params["feature_extractor_hparams"]["halfing"]:
                 h, w = int(h * 0.5), int(w * 0.5)
-                
-            self.heatmap_ex = HeatMapExctract(self.channels, params["feature_extractor_hparams"]["halfing"])
+            if "add_pool_end" in params["feature_extractor_hparams"]:
+                if params["feature_extractor_hparams"]["add_pool_end"]:
+                    print("adding pool at the end")
+                    add_pool_end = True
+            
+            self.heatmap_ex = HeatMapExctract(self.channels, params["feature_extractor_hparams"]["halfing"], add_pool_end)
         else:
             self.heatmap_ex = HeatMapExctract(self.channels)
         
