@@ -203,6 +203,7 @@ class Gaze_Predictor(nn.Module):
             print("alternative_landmarks is: ", params["feature_extractor_hparams"]["alternative_landmarks"])
             if params["feature_extractor_hparams"]["alternative_landmarks"]:
                 alt_exist = True
+                print("doint alt landmarks")
                 self.heatmap_ex = lambda x: torch.flatten(x, start_dim=1)
                 self.landmarks_extract = nn.Sequential(
                                        nn.Linear(d_model_emb * 2, d_model_emb * 2),
@@ -227,6 +228,7 @@ class Gaze_Predictor(nn.Module):
                     add_pool_end = True
             
             self.heatmap_ex = HeatMapExctract(self.channels, params["feature_extractor_hparams"]["halfing"], add_pool_end)
+        
         elif not alt_exist:
             self.heatmap_ex = HeatMapExctract(self.channels)
         

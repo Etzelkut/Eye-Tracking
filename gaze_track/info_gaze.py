@@ -87,7 +87,7 @@ train_hparams_example = {
 }
 
 example_model_hparams = {
-    "type": "trans_based",
+    "type": "trans_based", # not used
     "feature_extractor_hparams": example_feature_extract_hparams,
 
     "alternative_landmarks": base_args["alternative_landmarks"],
