@@ -11,7 +11,7 @@ import json
 import torchvision.transforms.functional as TF
 
 class UnityEyesDataset(Dataset):
-  def __init__(self, img_dir, output_size, transform=None, grayscale = True, val = True, halfing = False):
+  def __init__(self, img_dir, output_size, transform=None, grayscale = True, val = True, halfing = False, alt_land = False):
     self.transform = transform
     if img_dir is None:
         img_dir = './gazeset/imgs'
@@ -26,7 +26,14 @@ class UnityEyesDataset(Dataset):
     self.grayscale = grayscale
     self.output_size = output_size
     self.val = val
+
+    assert (halfing != alt_land and halfing == True)
+
     self.halfing = halfing
+    self.alt_land = alt_land
+
+    print("halfing and alt_land is: ", halfing, alt_land)
+
     #idxs_aranged = np.arange(len(self.img_paths))
     np.random.seed(42)
 
@@ -119,6 +126,12 @@ class UnityEyesDataset(Dataset):
       eye_sample['landmarks'] = eye_sample['landmarks'] * np.array([0.5, 0.5])
       eye_sample['landmarks'] = eye_sample['landmarks'].astype(np.float32)
       halfed = 0.5
+    
+    elif self.alt_land:
+      h, w = eye_sample['img'].shape[-2:]
+      eye_sample['landmarks'] = eye_sample['landmarks'] / np.array([h, w]) - 0.5
+      eye_sample['landmarks'] = eye_sample['landmarks'].astype(np.float32)
+
 
     heatmaps = get_heatmaps(int(eye_sample['img'].shape[-1] * halfed),  int(eye_sample['img'].shape[-2] * halfed), eye_sample['landmarks'])
     eye_sample["heatmaps"] = heatmaps
@@ -134,20 +147,28 @@ class Dataset_Unity_pl(pl.LightningDataModule):
 
   def prepare_data(self):
     print("can add download here")
-    
+  
+
+  def check_exist(self, stringname):
+    if stringname not in self.hparams:
+      var_name = False
+      print("no ", stringname)
+    else:
+      var_name = self.hparams[stringname]
+      print(stringname, " is ", self.hparams[stringname])
+
+    return var_name
+
+
   def setup(self):
     
-    if "halfing" not in self.hparams:
-      halfing = False
-      print("no halfing")
-    else:
-      halfing = self.hparams["halfing"]
-      print("halfing is ", self.hparams["halfing"])
+    halfing = self.check_exist("halfing")
+    alt_land = self.check_exist("alternative_landmarks")
 
     self.dataset_train = UnityEyesDataset(self.hparams["img_dir"], self.hparams["im_size"], transform=Preprocess(), 
-                                          grayscale = self.hparams["grayscale"], val = False, halfing=halfing)
+                                          grayscale = self.hparams["grayscale"], val = False, halfing=halfing, alt_land=alt_land)
     dataset_val = UnityEyesDataset(self.hparams["img_dir"], self.hparams["im_size"], transform=Preprocess(), 
-                                    grayscale = self.hparams["grayscale"], val = True, halfing=halfing)
+                                    grayscale = self.hparams["grayscale"], val = True, halfing=halfing, alt_land=alt_land)
 
     N = len(dataset_val)
     vn = int(N/2)

@@ -31,34 +31,66 @@ class Gaze_Track_pl(pl.LightningModule):
         self.learning_params = self.hparams["training"]
         self.augment = DataAugmentationImage(max_epochs = self.hparams["training"]["epochs"])
 
-        #self.heatmapLoss = HeatmapLoss()
+        self.heatmapLoss = HeatmapLoss()
         self.landmarks_loss = nn.MSELoss()
         self.gaze_loss = nn.MSELoss()
+
+        self.alternative_landmarks = self.check_exist("alternative_landmarks")
+        self.add_heatmap_loss = self.check_exist("add_heatmap_loss")
+        
+        assert (self.add_heatmap_loss !=  self.alternative_landmarks and self.alternative_landmarks)
+
+
+    def check_exist(self, stringname):
+        if stringname not in self.hparams:
+            var_name = False
+            print("no ", stringname)
+        else:
+            var_name = self.hparams[stringname]
+            print(stringname, " is ", self.hparams[stringname])
+
+        return var_name     
+       
 
     def forward(self, x):
         gaze, heatmaps, landmarks_out = self.network(x)
         return gaze, heatmaps, landmarks_out
 
 
-    def loss_calc(self, heatmaps_pred, heatmaps, landmarks_pred, landmarks, gaze_pred, gaze):
+    def tranform_into_actual_coor(self, landmarks_pred):
+        landmarks_pred = (landmarks_pred + 0.5)
+        landmarks_pred[:,:, 0] *= self.hparams["im_size"][0]
+        landmarks_pred[:,:, 1] *= self.hparams["im_size"][1]
 
-        #heatmap_loss = self.heatmapLoss(heatmaps_pred, heatmaps)
+        return landmarks_pred
+
+    def loss_calc(self, heatmaps_pred, heatmaps, landmarks_pred, landmarks, gaze_pred, gaze, vali = False):
+
+        if vali and self.alternative_landmarks:
+            landmarks_pred = self.tranform_into_actual_coor(landmarks_pred)
+            landmarks = self.tranform_into_actual_coor(landmarks)
+
         landmarks_loss = self.landmarks_loss(landmarks_pred, landmarks)
         gaze_loss = self.gaze_loss(gaze_pred, gaze) * 100
 
-        #return torch.sum(heatmap_loss), landmarks_loss, gaze_loss
+        if self.add_heatmap_loss:
+            heatmaps_loss = self.heatmapLoss(heatmaps_pred, heatmaps)
+            return torch.sum(heatmaps_loss) * 10, landmarks_loss, gaze_loss
+        
         return 0, landmarks_loss, gaze_loss
 
 
-    def shared_step(self, batch):
+    def shared_step(self, batch, vali = False):
         imgs = batch['img'].float()
         heatmaps = batch['heatmaps'].float()
         landmarks = batch['landmarks'].float()
         gaze = batch['gaze'].float()
+
         gaze_pred, heatmaps_pred, landmarks_pred = self(imgs)
 
         heatmaps_loss, landmarks_loss, gaze_loss = self.loss_calc(
                     heatmaps_pred, heatmaps, landmarks_pred, landmarks, gaze_pred, gaze,
+                    vali
                     )
         return heatmaps_loss, landmarks_loss, gaze_loss
 
@@ -68,7 +100,10 @@ class Gaze_Track_pl(pl.LightningModule):
         heatmaps_loss, landmarks_loss, gaze_loss = self.shared_step(batch)
         loss = (landmarks_loss + gaze_loss) #+ heatmaps_loss) #* 10)
         
-        #self.log('train_loss_heatmap', heatmaps_loss, on_step=False, on_epoch=True, logger=True)
+        if self.add_heatmap_loss:
+            loss += heatmaps_loss
+            self.log('train_loss_heatmap', heatmaps_loss, on_step=False, on_epoch=True, logger=True)
+
         self.log('train_loss_landmarks', landmarks_loss, on_step=False, on_epoch=True, logger=True)
         self.log('train_loss_gaze', gaze_loss, on_step=False, on_epoch=True, logger=True)
         
@@ -78,10 +113,12 @@ class Gaze_Track_pl(pl.LightningModule):
 
 
     def validation_step(self, batch, batch_idx):
-        heatmaps_loss, landmarks_loss, gaze_loss = self.shared_step(batch)
+        heatmaps_loss, landmarks_loss, gaze_loss = self.shared_step(batch, vali = True)
         loss = (landmarks_loss + gaze_loss + heatmaps_loss) #* 10)
         
-        #self.log('vall_loss_heatmap', heatmaps_loss, on_step=False, on_epoch=True, logger=True)
+        if self.add_heatmap_loss:
+            self.log('vall_loss_heatmap', heatmaps_loss, on_step=False, on_epoch=True, logger=True)
+
         self.log('val_loss_landmarks', landmarks_loss, on_step=False, on_epoch=True, logger=True)
         self.log('val_loss_gaze', gaze_loss, on_step=False, on_epoch=True, logger=True)
         
@@ -91,10 +128,12 @@ class Gaze_Track_pl(pl.LightningModule):
 
 
     def test_step(self, batch, batch_idx):
-        heatmaps_loss, landmarks_loss, gaze_loss = self.shared_step(batch)
+        heatmaps_loss, landmarks_loss, gaze_loss = self.shared_step(batch, vali = True)
         loss = (landmarks_loss + gaze_loss + heatmaps_loss) #* 10)
         
-        #self.log('test_loss_heatmap', heatmaps_loss, on_step=False, on_epoch=True, logger=True)
+        if self.add_heatmap_loss:
+            self.log('test_loss_heatmap', heatmaps_loss, on_step=False, on_epoch=True, logger=True)
+
         self.log('test_loss_landmarks', landmarks_loss, on_step=False, on_epoch=True, logger=True)
         self.log('test_loss_gaze', gaze_loss, on_step=False, on_epoch=True, logger=True)
         

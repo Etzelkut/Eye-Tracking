@@ -104,7 +104,18 @@ class Transf_Feature_Extract(nn.Module):
         self.dropout = nn.Dropout(feature_extract_hparams["dropout"])
 
         self.number_of_learn_params = feature_extract_hparams["number_of_learn_params"]
-        self.zero_class_token = nn.Parameter(torch.randn(1, self.number_of_learn_params, feature_extract_hparams["d_model_emb"]))
+        n_of_learn_params = self.number_of_learn_params
+
+        # goes in the end but wrote here for easier writing
+        self.get_landmarks = lambda x: rearrange(x, 'b (h w) (p pd c) -> b c (h p) (w pd)', h = int(self.im_size[0]/self.patch_size),  p = self.patch_size, pd = self.patch_size, )
+        if "alternative_landmarks" in feature_extract_hparams:
+            if feature_extract_hparams["alternative_landmarks"]:
+                print("adding alternative_landmarks in transformer")
+                n_of_learn_params += 2
+                self.get_landmarks = lambda x: x[:, 0:2]
+
+    
+        self.zero_class_token = nn.Parameter(torch.randn(1, n_of_learn_params, feature_extract_hparams["d_model_emb"]))
 
         if feature_extract_hparams["pos_emb"]["add_emb"]:
             pe = feature_extract_hparams["pos_emb"]["emb_module"]
@@ -121,7 +132,6 @@ class Transf_Feature_Extract(nn.Module):
         self.feature_extcractor = nn.Identity()
         self.image_extcractor = nn.Identity()
         
-
         self.add_train_land = nn.Identity()
         
         if feature_extract_hparams["add_additional_train_landmarks"]:
@@ -156,7 +166,7 @@ class Transf_Feature_Extract(nn.Module):
         x = self.add_train_land(x)
 
         # c = self.channels, p = self.patch_size, h = self.im_size_h, w = self.im_size
-        x = rearrange(x, 'b (h w) (p pd c) -> b c (h p) (w pd)', h = int(self.im_size[0]/self.patch_size),  p = self.patch_size, pd = self.patch_size, )   
+        x = self.get_landmarks(x)   
 
         return x, feature_vector
 
@@ -172,6 +182,7 @@ class Gaze_Predictor(nn.Module):
         else:
             self.channels = 3
 
+
         self.feature_extcractor = Transf_Feature_Extract(params["feature_extractor_hparams"])
 
         d_model_emb = params["feature_extractor_hparams"]["d_model_emb"] * params["feature_extractor_hparams"]["number_of_learn_params"]
@@ -185,9 +196,27 @@ class Gaze_Predictor(nn.Module):
 
 
         h, w = params["feature_extractor_hparams"]["im_size"]
+        c = 17
 
+        alt_exist = False
+        if "alternative_landmarks" in params["feature_extractor_hparams"]:
+            print("alternative_landmarks is: ", params["feature_extractor_hparams"]["alternative_landmarks"])
+            if params["feature_extractor_hparams"]["alternative_landmarks"]:
+                alt_exist = True
+                self.heatmap_ex = lambda x: torch.flatten(x, start_dim=1)
+                self.landmarks_extract = nn.Sequential(
+                                       nn.Linear(d_model_emb * 2, d_model_emb * 2),
+                                       Mish(),
+                                       nn.Dropout(0.05),
+                                       nn.Linear(d_model_emb * 2, c * 2),
+                                       nn.Unflatten(1, (c, 2))
+                                      )
 
         if "halfing" in params["feature_extractor_hparams"]:
+
+            if alt_exist and params["feature_extractor_hparams"]["halfing"]:
+                raise Exception("Both halfing and alternative_landmarks exist")
+
             print("hafing is: ", params["feature_extractor_hparams"]["halfing"])
             add_pool_end = False
             if params["feature_extractor_hparams"]["halfing"]:
@@ -198,10 +227,9 @@ class Gaze_Predictor(nn.Module):
                     add_pool_end = True
             
             self.heatmap_ex = HeatMapExctract(self.channels, params["feature_extractor_hparams"]["halfing"], add_pool_end)
-        else:
+        elif not alt_exist:
             self.heatmap_ex = HeatMapExctract(self.channels)
         
-        c = 17
         self.landmarks_extract = SpatialSoftmax(h, w, c, temperature=1., unnorm=True)
 
     def forward(self, x):
