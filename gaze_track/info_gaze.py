@@ -96,5 +96,5 @@ example_model_hparams = {
 
     "mlp_drop": 0.05,
     "gaze_size": 2,
-    "traning": train_hparams_example,
+    "training": train_hparams_example,
 }

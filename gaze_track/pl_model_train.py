@@ -38,7 +38,8 @@ class Gaze_Track_pl(pl.LightningModule):
         self.alternative_landmarks = self.check_exist("alternative_landmarks")
         self.add_heatmap_loss = self.check_exist("add_heatmap_loss")
         
-        assert (self.add_heatmap_loss !=  self.alternative_landmarks and self.alternative_landmarks)
+
+        assert (not (self.add_heatmap_loss and self.alternative_landmarks))
 
 
     def check_exist(self, stringname):
