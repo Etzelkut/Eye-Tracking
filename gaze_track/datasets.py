@@ -27,7 +27,7 @@ class UnityEyesDataset(Dataset):
     self.output_size = output_size
     self.val = val
 
-    assert (halfing != alt_land and halfing == True)
+    assert (not (alt_land and halfing))
 
     self.halfing = halfing
     self.alt_land = alt_land
