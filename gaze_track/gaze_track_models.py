@@ -122,7 +122,7 @@ class Transf_Feature_Extract(nn.Module):
             self.positional_embedding = Pos_Emb(type_module=pe["type_module"], 
                                     d=pe["d"], dropout=pe["dropout"])
         else:
-            self.positional_embedding = ViT_pos_emb(n_patch, d_model_emb, self.number_of_learn_params)
+            self.positional_embedding = ViT_pos_emb(n_patch, d_model_emb, n_of_learn_params)
 
         if feature_extract_hparams["encoder_type"] == "evolved":
             self.encoder = Modified_Encoder_Layer(feature_extract_hparams["encoder_params"])
