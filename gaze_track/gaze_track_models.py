@@ -222,18 +222,19 @@ class Gaze_Predictor(nn.Module):
 
             print("halfing is: ", params["feature_extractor_hparams"]["halfing"])
 
-            print("adding halfing for sure")
-            add_pool_end = False
-            if params["feature_extractor_hparams"]["halfing"]:
-                h, w = int(h * 0.5), int(w * 0.5)
-            if "add_pool_end" in params["feature_extractor_hparams"]:
-                if params["feature_extractor_hparams"]["add_pool_end"]:
-                    print("adding pool at the end")
-                    add_pool_end = True
-            
-            self.heatmap_ex = HeatMapExctract(self.channels, params["feature_extractor_hparams"]["halfing"], add_pool_end)
-            self.landmarks_extract = SpatialSoftmax(h, w, c, temperature=1., unnorm=True)
-            
+            if not alt_exist:
+                print("not alt for sure")
+                add_pool_end = False
+                if params["feature_extractor_hparams"]["halfing"]:
+                    h, w = int(h * 0.5), int(w * 0.5)
+                if "add_pool_end" in params["feature_extractor_hparams"]:
+                    if params["feature_extractor_hparams"]["add_pool_end"]:
+                        print("adding pool at the end")
+                        add_pool_end = True
+                
+                self.heatmap_ex = HeatMapExctract(self.channels, params["feature_extractor_hparams"]["halfing"], add_pool_end)
+                self.landmarks_extract = SpatialSoftmax(h, w, c, temperature=1., unnorm=True)
+
         elif not alt_exist:
             self.heatmap_ex = HeatMapExctract(self.channels)
             self.landmarks_extract = SpatialSoftmax(h, w, c, temperature=1., unnorm=True)
