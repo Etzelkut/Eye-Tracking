@@ -97,4 +97,6 @@ example_model_hparams = {
     "mlp_drop": 0.05,
     "gaze_size": 2,
     "training": train_hparams_example,
+
+    "dataset_h": dataset_hparams,
 }
