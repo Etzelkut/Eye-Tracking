@@ -12,6 +12,7 @@ import torchvision.transforms.functional as TF
 
 class UnityEyesDataset(Dataset):
   def __init__(self, img_dir, output_size, transform=None, grayscale = True, val = True, halfing = False, alt_land = False):
+    super().__init__()
     self.transform = transform
     if img_dir is None:
         img_dir = './gazeset/imgs'
