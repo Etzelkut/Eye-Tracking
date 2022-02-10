@@ -56,7 +56,6 @@ class MPIIGaze(Dataset):
 
 
 
-
 class Dataset_mpi_pl(pl.LightningDataModule):
   def __init__(self, datahparams):
     super().__init__()
