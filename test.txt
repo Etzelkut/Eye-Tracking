@@ -1,0 +1,186 @@
+26: [{'val_loss': 7.304686546325684,
+  'val_loss_gaze': 0.4460446536540985,
+  'val_loss_landmarks': 6.858638286590576}]
+
+
+27: [{'val_loss': 7.412482261657715,
+  'val_loss_gaze': 0.40709084272384644,
+  'val_loss_landmarks': 7.0053911209106445}]   !!!
+
+/content/drive/MyDrive/eye_w/weights/trans_2_3e4_att_256_1learnparam_noNorm_land_alt_MdataN-Step-Checkpoint_27_55944.ckpt
+
+
+
+28: [{'val_loss': 7.049773693084717,
+  'val_loss_gaze': 0.4825935661792755,
+  'val_loss_landmarks': 6.567177772521973}]
+
+29: [{'val_loss': 7.278422832489014,
+  'val_loss_gaze': 0.4132797420024872,
+  'val_loss_landmarks': 6.865139484405518}]    !!!
+
+/content/drive/MyDrive/eye_w/weights/trans_2_3e4_att_256_1learnparam_noNorm_land_alt_MdataN-Step-Checkpoint_29_60088.ckpt
+
+
+
+30: [{'val_loss': 7.647112846374512,
+  'val_loss_gaze': 0.4213169813156128,
+  'val_loss_landmarks': 7.225793361663818}]
+
+/content/drive/MyDrive/eye_w/weights/trans_2_3e4_att_256_1learnparam_noNorm_land_alt_MdataN-Step-Checkpoint_30_62160.ckpt
+
+
+last: [{'val_loss': 7.647112846374512,
+  'val_loss_gaze': 0.4213169813156128,
+  'val_loss_landmarks': 7.225793361663818}]    !!!
+
+
+mean error 16.43294590721282 for "/content/drive/MyDrive/eye_w/weights/trans_2_3e4_att_256_1learnparam_noNorm_land_N-Step-Checkpoint_29_23490.ckpt"
+mean error 14.124033660298325 for "/content/drive/MyDrive/eye_w/weights/trans_2_3e4_att_256_1learnparam_noNorm_land_alt_MdataN-Step-Checkpoint_27_55944.ckpt"
+mean error 13.448220713857355 for "/content/drive/MyDrive/eye_w/weights/trans_2_3e4_att_256_1learnparam_noNorm_land_alt_MdataN-Step-Checkpoint_29_60088.ckpt"
+mean error 14.594999066209782 for "/content/drive/MyDrive/eye_w/weights/trans_2_3e4_att_256_1learnparam_noNorm_land_alt_MdataN-Step-Checkpoint_30_62160.ckpt"
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+im read
+0
+255
+im preprocess_unityeyes_image
+0
+255
+preproccess
+tensor(1.)
+tensor(0.)
+after preproccess
+tensor(1.)
+tensor(0.)
+after grayacale
+tensor(0.8911)
+tensor(0.)
+val
+
+after norm
+0 torch.Size([1, 96, 160]) tensor(-1.) tensor(0.7582)
+
+
+im read
+0
+255
+im preprocess_unityeyes_image
+0
+219
+preproccess
+tensor(0.8588)
+tensor(0.)
+after preproccess
+tensor(0.8588)
+tensor(0.)
+after grayacale
+tensor(0.7972)
+tensor(0.)
+train
+random size:  (329, 493)
+
+
+
+before norm
+0 torch.Size([1, 96, 160]) tensor(0.) tensor(0.6943)
+random aug
+tensor(0.4221, device='cuda:0')
+tensor(0.0380, device='cuda:0')
+random noise
+tensor(0.4375, device='cuda:0')
+tensor(0.0114, device='cuda:0')
+norm
+after norm
+0 torch.Size([1, 96, 160]) tensor(-0.9772) tensor(-0.1251)
+
+
+
+
+before norm
+1 torch.Size([1, 96, 160]) tensor(0.) tensor(0.8828)
+random aug
+tensor(1.0000, device='cuda:0')
+tensor(5.8192e-31, device='cuda:0')
+random noise
+tensor(1.0383, device='cuda:0')
+tensor(-0.0299, device='cuda:0')
+norm
+after norm
+1 torch.Size([1, 96, 160]) tensor(-1.0598) tensor(1.0767)
+
+
+before norm
+2 torch.Size([1, 96, 160]) tensor(0.) tensor(0.9706)
+random aug
+tensor(0.9673, device='cuda:0')
+tensor(0., device='cuda:0')
+norm
+after norm
+2 torch.Size([1, 96, 160]) tensor(-1.) tensor(0.9345)
+
+
+!!!
+
+
+im read
+0
+255
+im preprocess_unityeyes_image
+0
+255
+preproccess
+tensor(1.)
+tensor(0.)
+after preproccess
+tensor(0.0039)
+tensor(0.)
+after grayacale
+tensor(0.0035)
+tensor(0.)
+val
+
+after norm
+0 torch.Size([1, 96, 160]) tensor(-1.) tensor(-0.9931)
+
+
+
+im read
+0
+255
+im preprocess_unityeyes_image
+0
+219
+preproccess
+tensor(0.8588)
+tensor(0.)
+after preproccess
+tensor(0.0034)
+tensor(0.)
+after grayacale
+tensor(0.0031)
+tensor(0.)
+train
+
+before norm
+0 torch.Size([1, 96, 160]) tensor(0.) tensor(0.0026)
+random aug
+tensor(0.0025, device='cuda:0')
+tensor(0.0001, device='cuda:0')
+random noise
+tensor(4.3869, device='cuda:0')
+tensor(-3.8716, device='cuda:0')
+norm
+after norm
+0 torch.Size([1, 96, 160]) tensor(-8.7432) tensor(7.7739)
+
+
+before norm
+2 torch.Size([1, 96, 160]) tensor(0.) tensor(0.0038)
+random aug
+tensor(0.0027, device='cuda:0')
+tensor(0.0002, device='cuda:0')
+norm
+after norm
+2 torch.Size([1, 96, 160]) tensor(-0.9997) tensor(-0.9945)

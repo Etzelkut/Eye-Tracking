@@ -100,3 +100,38 @@ example_model_hparams = {
 
     "dataset_h": dataset_hparams,
 }
+
+
+
+mpi_training = {
+    "optimizer": "adamW", # "belief", "ranger_belief", "adam", adamW
+    "lr": 3e-4, #
+    "epochs": base_args['max_epochs'], #
+    #
+    "add_sch": False,
+    #
+    #belief
+    "eplison_belief": 1e-16,
+    "beta": [0.9, 0.999], # not used
+    "weight_decouple": True, 
+    "weight_decay": 1e-4,
+    "rectify": True,
+
+}
+
+mpii_set = {
+    "size": (96, 160),
+    "main_path": "./mpi/MPIIGaze",
+    "batch_size": 64,
+    "num_workers": 2,
+    "dataloader_shuffle": True,
+    "epochs": 30,
+    "training": mpi_training,
+
+    "lock_main_weights": True,
+
+    "new_gaze_weights": True,
+    "mlp_drop": 0.05,
+
+    "loss_function": "mse", # "mse", mae 
+}

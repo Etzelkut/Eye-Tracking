@@ -14,5 +14,7 @@ Small (about 2M parameters) transformer-based model achieved 13.44% mean angular
 * Try TokenLearner.
 * Something else that I forgot.
 
+gelu, adjust transformation, add visual layers, add tokenize?
+
 # Note
 In the folder old_proj_gaze, you can find some previous works on the topic and the presentation.
