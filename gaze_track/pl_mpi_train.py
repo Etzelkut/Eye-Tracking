@@ -7,7 +7,7 @@ from basem.subblocks import Swish, Mish
 from adabelief_pytorch import AdaBelief
 from ranger_adabelief import RangerAdaBelief
 
-from dataset_mpi_utils import angularError
+from gaze_track.dataset_mpi_utils import angularError
 from gaze_track.augmentations import DataAugmentationImage
 
 

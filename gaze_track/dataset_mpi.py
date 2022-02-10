@@ -7,7 +7,7 @@ import torchvision.transforms.functional as TF
 from torchvision import transforms
 
 import glob
-from dataset_mpi_utils import read_files_mpi_val, process_mpi_files, devide_val
+from gaze_track.dataset_mpi_utils import read_files_mpi_val, process_mpi_files, devide_val
 
 
 class MPI_Preprocess(nn.Module):
