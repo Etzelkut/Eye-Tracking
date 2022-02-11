@@ -12,12 +12,12 @@ from gaze_track.augmentations import DataAugmentationImage
 
 
 class Updated_Gaze(nn.Module):
-    def __init__(self, old_gaze, d_model_emb, gaze_size):
+    def __init__(self, old_gaze, d_model_emb, gaze_size, mlp_drop):
         super().__init__()
         self.old_gaze = old_gaze
         self.new_gaze = nn.Sequential(nn.Linear(d_model_emb, d_model_emb),
                                       Mish(), # Swich
-                                      nn.Dropout(self.hparams["mlp_drop"]),
+                                      nn.Dropout(mlp_drop),
                                       nn.Linear(d_model_emb, gaze_size),
                                     )
         self.combine_gaze = nn.Linear(gaze_size * 2, gaze_size)
@@ -49,7 +49,8 @@ class MPI_Gaze_Track_pl(pl.LightningModule):
     gaze_size = self.hparams["gaze_size"]
 
     if self.hparams["updated_gaze"]:
-        self.network.gaze_mlp = Updated_Gaze(self.network.gaze_mlp, d_model_emb, gaze_size)
+        self.network.gaze_mlp = Updated_Gaze(self.network.gaze_mlp, d_model_emb, 
+                                            gaze_size, self.hparams["mlp_drop"])
 
     if self.hparams["new_gaze_weights"]:
       self.network.gaze_mlp = nn.Sequential(nn.Linear(d_model_emb, d_model_emb),
