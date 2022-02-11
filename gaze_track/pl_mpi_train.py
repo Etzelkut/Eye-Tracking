@@ -11,6 +11,23 @@ from gaze_track.dataset_mpi_utils import angularError
 from gaze_track.augmentations import DataAugmentationImage
 
 
+class Updated_Gaze(nn.Module):
+    def __init__(self, old_gaze, d_model_emb, gaze_size):
+        super().__init__()
+        self.old_gaze = old_gaze
+        self.new_gaze = nn.Sequential(nn.Linear(d_model_emb, d_model_emb),
+                                      Mish(), # Swich
+                                      nn.Dropout(self.hparams["mlp_drop"]),
+                                      nn.Linear(d_model_emb, gaze_size),
+                                    )
+        self.combine_gaze = nn.Linear(gaze_size * 2, gaze_size)
+    def forward(self, x):
+        x_1 = self.old_gaze(x)
+        x_2 = self.new_gaze(x)
+        x = torch.cat((x_1, x_2), 1)
+        x = self.combine_gaze(x)
+        return x
+
 
 class MPI_Gaze_Track_pl(pl.LightningModule):
   def __init__(self, hparams, model = None, *args, **kwargs): #*args, **kwargs hparams, steps_per_epoch
@@ -28,9 +45,13 @@ class MPI_Gaze_Track_pl(pl.LightningModule):
       if param.requires_grad and 'landmarks_extract' in name:
         param.requires_grad = False
 
+    d_model_emb = self.hparams["d_model_emb"]
+    gaze_size = self.hparams["gaze_size"]
+
+    if self.hparams["updated_gaze"]:
+        self.network.gaze_mlp = Updated_Gaze(self.network.gaze_mlp, d_model_emb, gaze_size)
+
     if self.hparams["new_gaze_weights"]:
-      d_model_emb = self.hparams["d_model_emb"]
-      gaze_size = self.hparams["gaze_size"]
       self.network.gaze_mlp = nn.Sequential(nn.Linear(d_model_emb, d_model_emb),
                                       Mish(), # Swich
                                       nn.Dropout(self.hparams["mlp_drop"]),
