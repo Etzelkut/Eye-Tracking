@@ -31,7 +31,7 @@ class MPI_Gaze_Track_pl(pl.LightningModule):
     if self.hparams["new_gaze_weights"]:
       d_model_emb = self.hparams["d_model_emb"]
       gaze_size = self.hparams["gaze_size"]
-      self.network.gaze_mlp = (nn.Linear(d_model_emb, d_model_emb),
+      self.network.gaze_mlp = nn.Sequential(nn.Linear(d_model_emb, d_model_emb),
                                       Swish(), # Mish
                                       nn.Dropout(self.hparams["mlp_drop"]),
                                       nn.Linear(d_model_emb, gaze_size),
