@@ -55,7 +55,8 @@ class MPI_Gaze_Track_pl(pl.LightningModule):
             if param.requires_grad and 'feature_extcractor' in name:
                 #
                 if unlock_tokens and ('zero_class_token' in name):
-                        continue
+                    print("unlock tokens")
+                    continue
                 #
                 param.requires_grad = False
 
