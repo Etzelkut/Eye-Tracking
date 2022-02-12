@@ -38,12 +38,27 @@ class MPI_Gaze_Track_pl(pl.LightningModule):
     self.swa_model = None
 
     self.network = model
+
+    # work only for one trainable token, rewrite when will use more
+    # I do not lock landmarks tokens, so could be a problem
+    # but a possible solution could be param[:, 1:].detach()
+    # but not sure so unlocking all
+    # I think this weights will not change anyway
+
+    unlock_tokens = self.hparams["unlock_tokens"]
+
     for name, param in self.network.named_parameters():
-      if self.hparams["lock_main_weights"]:
-        if param.requires_grad and 'feature_extcractor' in name:
-          param.requires_grad = False
-      if param.requires_grad and 'landmarks_extract' in name:
-        param.requires_grad = False
+        if param.requires_grad and 'landmarks_extract' in name:
+            param.requires_grad = False
+
+        if self.hparams["lock_main_weights"]:
+            if param.requires_grad and 'feature_extcractor' in name:
+                #
+                if unlock_tokens and ('zero_class_token' in name):
+                        continue
+                #
+                param.requires_grad = False
+
 
     d_model_emb = self.hparams["d_model_emb"]
     gaze_size = self.hparams["gaze_size"]
