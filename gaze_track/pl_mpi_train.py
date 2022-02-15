@@ -1,4 +1,5 @@
 from os import sys, path
+from tkinter import X
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
 from basem.basic_dependency import *
@@ -9,6 +10,86 @@ from ranger_adabelief import RangerAdaBelief
 
 from gaze_track.dataset_mpi_utils import angularError
 from gaze_track.augmentations import DataAugmentationImage
+
+from basem.modules import Modified_Encoder_Layer, Encoder_Block
+
+
+def add_token(network, d_model_emb, n_of_learn_params = 1):
+  #nn.Parameter(torch.randn(1, n_of_learn_params, feature_extract_hparams["d_model_emb"]))
+  old_tokens = network.feature_extcractor.zero_class_token 
+  added_token = nn.Parameter(torch.randn(1, n_of_learn_params, d_model_emb))
+  network.feature_extcractor.zero_class_token = torch.cat((added_token, old_tokens), dim=1)
+  network.number_of_learn_params += n_of_learn_params
+  return network
+
+
+
+class Updated_Feature_Encoder(nn.Module):
+  def __init__(self, feature_model, feature_extract_hparams_, new_token = False):
+    super().__init__()
+    self.feature_model = feature_model # block weights
+
+    #copy everything and block, also can add maybe token here
+
+    self.patch_embedding = feature_model.patch_embedding
+    self.dropout = feature_model.dropout
+    self.zero_class_token = feature_model.zero_class_token
+    self.positional_embedding = feature_model.positional_embedding
+    self.encoder = feature_model.encoder
+    self.feature_extcractor = feature_model.feature_extcractor
+    self.number_of_learn_params = feature_model.number_of_learn_params
+    self.image_extcractor = feature_model.image_extcractor
+    self.add_train_land = feature_model.add_train_land
+    self.get_landmarks = feature_model.get_landmarks
+
+    self.new_token = new_token
+
+    if new_token:
+      self.added_token = nn.Parameter(torch.randn(1, 1, feature_extract_hparams_["d_model_emb"]))
+      self.number_of_learn_params += 1
+
+
+    feature_extract_hparams = dict.copy(feature_extract_hparams_)
+    
+    if feature_extract_hparams["encoder_type"] == "evolved":
+      self.added_encoder = Modified_Encoder_Layer(feature_extract_hparams["encoder_params"])
+    elif feature_extract_hparams["encoder_type"] == "transformer":
+      feature_extract_hparams["encoder_params"]["layers_number"] = 1
+      self.added_encoder = Encoder_Block(feature_extract_hparams["encoder_params"])
+
+  def forward(self, x):
+  # copy every subpart of the model and go, just let landmark go, but change feature extraction
+
+    x = self.patch_embedding(x)
+    x = self.dropout(x)
+
+    b, n, d = x.shape
+
+    if self.new_token:
+      added_token = torch.cat((self.added_token, self.zero_class_token), dim=1)
+    else:
+      added_token = self.zero_class_token
+
+    zero_class_token = torch.repeat_interleave(added_token, repeats = b, dim=0)
+
+    x = torch.cat((zero_class_token, x), dim=1)
+
+    x = self.positional_embedding(x)
+    x = self.encoder(x)
+
+
+    land = self.image_extcractor(x[:, self.number_of_learn_params:])
+
+    land = self.add_train_land(land)
+
+    # c = self.channels, p = self.patch_size, h = self.im_size_h, w = self.im_size
+    land = self.get_landmarks(land)   
+
+    x = self.added_encoder(x)
+    feature_vector = self.feature_extcractor(x[:, 0:self.number_of_learn_params])
+
+
+    return land, feature_vector
 
 
 class Updated_Gaze(nn.Module):
@@ -37,7 +118,7 @@ class MPI_Gaze_Track_pl(pl.LightningModule):
 
     self.swa_model = None
 
-    self.network = model
+    self.network = model.network
 
     # work only for one trainable token, rewrite when will use more
     # I do not lock landmarks tokens, so could be a problem
@@ -61,14 +142,21 @@ class MPI_Gaze_Track_pl(pl.LightningModule):
                 param.requires_grad = False
 
 
-    d_model_emb = self.hparams["d_model_emb"]
-    gaze_size = self.hparams["gaze_size"]
+    d_model_emb = model.hparams["feature_extractor_hparams"]["d_model_emb"]
+    gaze_size = model.hparams["gaze_size"]
+    number_of_learn_params = model.hparams["feature_extractor_hparams"]["number_of_learn_params"]
+    if self.hparams["add_encoder_for_gaze"]:
+      self.network.feature_extcractor = Updated_Feature_Encoder(self.network.feature_extcractor, 
+                                        model.hparams["feature_extractor_hparams"], self.hparams["add_token"])
+      if self.hparams["add_token"]:
+        number_of_learn_params += 1
 
     if self.hparams["updated_gaze"]:
-        self.network.gaze_mlp = Updated_Gaze(self.network.gaze_mlp, d_model_emb, 
+        self.network.gaze_mlp = Updated_Gaze(self.network.gaze_mlp, number_of_learn_params * d_model_emb, 
                                             gaze_size, self.hparams["mlp_drop"])
 
     if self.hparams["new_gaze_weights"]:
+      d_model_emb = d_model_emb * number_of_learn_params
       self.network.gaze_mlp = nn.Sequential(nn.Linear(d_model_emb, d_model_emb),
                                       Mish(), # Swich
                                       nn.Dropout(self.hparams["mlp_drop"]),
