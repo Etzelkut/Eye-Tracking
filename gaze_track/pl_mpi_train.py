@@ -27,8 +27,6 @@ def add_token(network, d_model_emb, n_of_learn_params = 1):
 class Updated_Feature_Encoder(nn.Module):
   def __init__(self, feature_model, feature_extract_hparams_, new_token = False):
     super().__init__()
-    self.feature_model = feature_model # block weights
-
     #copy everything and block, also can add maybe token here
 
     self.patch_embedding = feature_model.patch_embedding
