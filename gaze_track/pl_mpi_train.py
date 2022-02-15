@@ -12,7 +12,7 @@ from gaze_track.dataset_mpi_utils import angularError
 from gaze_track.augmentations import DataAugmentationImage
 
 from basem.modules import Modified_Encoder_Layer, Encoder_Block
-
+from einops import rearrange
 
 def add_token(network, d_model_emb, n_of_learn_params = 1):
   #nn.Parameter(torch.randn(1, n_of_learn_params, feature_extract_hparams["d_model_emb"]))
@@ -39,6 +39,7 @@ class Updated_Feature_Encoder(nn.Module):
     self.image_extcractor = feature_model.image_extcractor
     self.add_train_land = feature_model.add_train_land
     self.get_landmarks = feature_model.get_landmarks
+    self.patch_size = feature_model.patch_size
 
     self.new_token = new_token
 
@@ -57,6 +58,7 @@ class Updated_Feature_Encoder(nn.Module):
 
   def forward(self, x):
   # copy every subpart of the model and go, just let landmark go, but change feature extraction
+    x = rearrange(x, 'b c (h p) (w pd) -> b (h w) (p pd c)', p = self.patch_size, pd = self.patch_size)
 
     x = self.patch_embedding(x)
     x = self.dropout(x)
