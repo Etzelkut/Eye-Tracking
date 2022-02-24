@@ -22,7 +22,7 @@ Small (about 2M parameters) transformer-based model achieved 13.44% mean angular
 * Different loss functions can be tested (L1?).
 * More testing on different models, that are already written in basem (by me), but also other new architectures could be tried.
 * Try TokenLearner.
-* Something else that I forgot.
+* Something else that I forgot: ConViT: Improving Vision Transformers with Soft Convolutional Inductive Biases.
 
 gelu, adjust transformation, add visual layers, add tokenize?
 
