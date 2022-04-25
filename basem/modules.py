@@ -80,11 +80,16 @@ class Encoder_Layer(nn.Module):
         ff_activation_type = layer_hparams["ff_activation_type"]
         ff_glu = layer_hparams["ff_glu"]
         ff_dropout = layer_hparams["ff_dropout"]
-
+        
+        if "d_hid" in layer_hparams:
+            d_hid = layer_hparams["d_hid"]
+        else:
+            d_hid = None
+        
         if layer_hparams["ff_type"] == "conv":
-            self.ff = PositionwiseFeedForward_conv(layer_hparams["d"], activation = activation_choose(ff_activation_type), glu = ff_glu, dropout = ff_dropout)
+            self.ff = PositionwiseFeedForward_conv(layer_hparams["d"], d_hid = d_hid, activation = activation_choose(ff_activation_type), glu = ff_glu, dropout = ff_dropout)
         elif layer_hparams["ff_type"] == "fc":
-            self.ff = PositionwiseFeedForward(layer_hparams["d"], activation = activation_choose(ff_activation_type), glu = ff_glu, dropout = ff_dropout)
+            self.ff = PositionwiseFeedForward(layer_hparams["d"], d_hid = d_hid, activation = activation_choose(ff_activation_type), glu = ff_glu, dropout = ff_dropout)
     
     def forward(self, x):
         z = self.att(x)
