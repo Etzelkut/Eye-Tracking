@@ -104,7 +104,13 @@ class Encoder_Block(nn.Module):
     def __init__(self, encoder_hparams):
         super().__init__()
         layer = Encoder_Layer(encoder_hparams)
-        self.layers = clones(layer, encoder_hparams["layers_number"])        
+        self.layers = [layer] #clones(layer, encoder_hparams["layers_number"])
+        #
+        for i in range(encoder_hparams["layers_number"] - 1):
+            layer_ = Encoder_Layer(encoder_hparams)
+            self.layers.append(layer_)
+        self.layers = nn.ModuleList(self.layers)
+        #
         self.norm_after = nn.LayerNorm(encoder_hparams["d"]) if encoder_hparams["norm_after_block"] else nn.Identity()
         if encoder_hparams["alternative_weight_init"]:
             self.weight_init()
