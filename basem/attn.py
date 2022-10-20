@@ -1,7 +1,7 @@
-from basem.basic_dependency import *
+from .basic_dependency import *
 from functools import partial
 from local_attention import LocalAttention
-from basem.functional import generate_relative_positions_matrix, default, split_at_index
+from .functional import generate_relative_positions_matrix, default, split_at_index, expand_dim
 
 #copied from https://fast-transformers.github.io/attention/
 #https://github.com/idiap/fast-transformers/blob/master/fast_transformers/attention/attention_layer.py

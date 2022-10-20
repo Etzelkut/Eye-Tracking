@@ -1,4 +1,4 @@
-from basem.basic_dependency import *
+from .basic_dependency import *
 import copy
 
 def swish_f(x):
@@ -39,3 +39,10 @@ def split_at_index(dim, index, t):
 def clones(module, N):
     "Produce N identical layers."
     return nn.ModuleList([copy.deepcopy(module) for _ in range(N)])
+
+def expand_dim(t, dim, k, unsqueeze=True):
+    if unsqueeze:
+        t = t.unsqueeze(dim)
+    expand_shape = [-1] * len(t.shape)
+    expand_shape[dim] = k
+    return t.expand(*expand_shape)
